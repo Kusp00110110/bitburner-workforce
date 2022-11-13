@@ -22,18 +22,27 @@ export async function main(ns) {
                     ns.nuke(host);
                 }
             }
-            
+
+
             // fill the coffers
             while (ns.getServerMoneyAvailable() < getServerMaxMoney() * 0.8) {
-                promises.push(ns.grow(host));
+                await ns.grow(host);
             }
 
             // break down the security
-            promises.push(await ns.hack(host));
-            promises.push(await ns.weaken(host));
+            while (getServerSecurityLevel() > ns.getServerMinSecurityLevel() * 0.5) {
+                await ns.weaken(host);
+            }
+
+            // As long as there is enough money and the security is low enough
+            while ((ns.getServerMoneyAvailable() > getServerMaxMoney() * 0.8) &&
+                (getServerSecurityLevel() < ns.getServerMinSecurityLevel() * 0.5)) {
+
+                await ns.hack(host);
+            }
+            count++;
+            sleep(ONE_DAY);
         }
-        count++;
-        sleep(ONE_DAY);
     }
 }
 
